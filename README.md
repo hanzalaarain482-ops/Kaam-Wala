@@ -5,7 +5,7 @@ Responsive service-booking **website** with customer, technician and admin dashb
 ## Setup
 
 1. Create a **new Supabase project**.
-2. Run `supabase/schema.sql` in the Supabase SQL Editor, **then** run `supabase/security_patch.sql` to lock down technician approvals.
+2. Run `supabase/schema.sql` in the Supabase SQL Editor, then `supabase/security_patch.sql`, then `supabase/extra_features.sql` in that order.
 3. Update `config.js` with your Supabase project URL and **publishable/anon key only**. Do NOT use your service-role secret.
 4. Serve this repository with VS Code Live Server or `python -m http.server 8080`. Open http://localhost:8080 in your browser.
 5. Register a customer. For your first admin, register another normal user, then use **Supabase SQL Editor** (never browser UI) to promote that user: `update public.profiles set role='admin' where email='YOUR_EMAIL';`
@@ -25,6 +25,8 @@ Responsive service-booking **website** with customer, technician and admin dashb
 - **No live moving-map location tracking**, no in-app audio/video calling, no true distance/radius matching. Current interface only captures initial GPS coordinates and can open external Google Maps navigation for an accepted job.
 - Chat refreshes periodically, rather than websocket realtime.
 - No actual payment processing, commission ledger, wallet, push notifications, CNIC verification/document upload, image uploads, moderation or dispute handling.
+- Saved addresses, favorites, in-app notification center, support tickets and admin platform-settings screens are included after running extra_features.sql. Settings do not process payments.
 - More testing, audit logging, real-user verification, abuse protection and launch readiness work are essential.
+- **Privacy warning:** service request rows currently contain exact addresses and GPS coordinates, which approved technicians can fetch before selection; limit real-user use until address redaction is implemented server-side.
 
 Do not publish real secret keys. Obtain all required consent for live location and protect customers' exact addresses and identity information. This repository is a usable **development starter** and must not be advertised as a complete commercially tested platform.
