@@ -1,6 +1,8 @@
-# BulaoJi — Apni Price Lagao, Ustaad Bulao!
+# BulaoJi
 
-React 18 + TypeScript + Vite starter for a Pakistan home and vehicle services marketplace. Customer, technician and admin interfaces are included as **demo screens**; the transactional backend, complete security policies, live tracking and tests are **not yet production-ready**.
+**Apni Price Lagao, Ustaad Bulao!**
+
+React + Vite + TypeScript marketplace starter. This repository is **under active development**. Its customer, technician, and admin screens use demonstration data; they are not a verified production marketplace.
 
 ## Run
 
@@ -9,11 +11,20 @@ npm install
 npm run dev
 ```
 
-Copy `.env.example` to `.env` and fill in the Supabase project URL and public anon key if connecting to Supabase.
+## Routes
 
-- Customer: `/app`
-- Technician: `/tech`
-- Admin: `/admin`
-- Auth demo: `/login`
+- /app — customer demo
+- /tech — technician demo
+- /admin — admin demo
 
-**Do not treat demo screens as protected routes.** Implement verified role guards, complete Postgres RLS, atomic booking status transitions and authorization before deploying or accepting real customers.
+## PWA
+
+The repository contains a web manifest, an SVG app icon and an offline service worker. Production builds should register the service worker and validate installability in a browser; web push requires a configured push backend and user permission.
+
+## Security
+
+Do not deploy the demo to real users without server-enforced authentication, Postgres RLS, verified technician identity, transactional booking and wallet functions, location-sharing consent and automated security testing. The business-rule tests in `tests/` are illustrative and do not replace database race-condition tests.
+
+## Status
+
+Multi-job UI and production Supabase integration are **not yet complete in this GitHub version**.
