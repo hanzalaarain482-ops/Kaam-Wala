@@ -97,3 +97,22 @@ document.addEventListener('submit',ev=>{
  if(ev.target.id==='complaintForm'){ev.preventDefault();act(async()=>{let v=formVal(ev.target);await insert('complaints',{author_id:id(),details:v.details,booking_id:v.booking_id||null});await loadExtras()})}
  if(ev.target.id==='settingsForm'){ev.preventDefault();act(async()=>{let v=formVal(ev.target);for(const [k,val] of Object.entries(v))await update('platform_settings','key',k.replace(/^setting_/,''),{value:val});await loadExtras()})}
 });
+
+
+/* More functional pages: customer reviews, technician directory, full job activity, and contact shortcuts. */
+function customerReviewPage(){
+ let completed=S.bookings.filter(b=>b.customer_id===id()&&b.status==='completed');
+ return '<div class="card"><h2>Rate Completed Jobs</h2><p class="muted">Reviews are tied to a real completed booking.</p>'+completed.map(b=>'<div class="item"><div class="row"><b>'+e(b.service_name)+'</b>'+tag(money(b.agreed_price))+'</div><form class="stack" onsubmit="submitReview(event,\''+b.id+'\',\''+b.technician_id+'\')"><label class="field">Stars<select name="rating">'+[5,4,3,2,1].map(x=>'<option value="'+x+'">'+x+' Stars</option>').join('')+'</select></label><label class="field">Review<textarea name="comment" required></textarea></label><button class="btn mini">Submit Review</button></form></div>').join('')+(completed.length?'':'<p class="empty">Complete a booking to leave a review.</p>')+'</div>';
+}
+async function submitReview(ev,bid,tid){ev.preventDefault();let v=formVal(ev.target);await act(async()=>{await insert('reviews',{booking_id:bid,customer_id:id(),technician_id:tid,rating:Number(v.rating),comment:v.comment});S.notice='Thank you! Your review was submitted.';S.error=false})}
+function technicianDirectory(){return '<div class="card"><h2>Available Pros</h2><p class="muted">Verified workers appear here. Bidding still happens through your bookings.</p><div class="notice">For safety, no exact live location or private documents are publicly displayed.</div><p class="muted">Search by skill and city using new booking workflow. Technician availability and distance matching are under development.</p></div>'}
+function helpPage(){return '<div class="card"><h2>Help Center</h2><div class="item"><h3>How do I book?</h3><p>Create a service request with your offer price. Wait for a verified technician to bid. Accept a bid to begin coordinating.</p></div><div class="item"><h3>Is payment collected in the app?</h3><p>Not yet. Agree payment method with the technician before work starts. Do not share banking passwords.</p></div><div class="item"><h3>Can I cancel?</h3><p>Yes, on an active booking select Cancel and provide a reason.</p></div><div class="item"><h3>How do I report an issue?</h3><p>Open Support & Complaints from the sidebar and submit a ticket.</p></div></div>'}
+function enhanceMenus(){
+ pages.customer.reviews=customerReviewPage;
+ pages.customer.find=technicianDirectory;
+ for(const r of ['customer','technician','admin'])pages[r].help=helpPage;
+ for(const [r,tabs] of Object.entries({customer:[['find','🔎 Find Pros'],['reviews','⭐ My Reviews'],['help','❓ Help Center']],technician:[['help','❓ Help Center']],admin:[['help','❓ Help Center']]})){
+  for(const [k,l] of tabs){if(!menus[r].some(x=>x[0]===k))menus[r].splice(menus[r].length-1,0,[k,l])}
+ }
+}
+enhanceMenus();
