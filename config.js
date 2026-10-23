@@ -1,3 +1,3 @@
 // Enter your public Supabase Project URL and publishable (anon) key.
 // NEVER put the Supabase service_role or secret key here.
-window.BULAOJI_CONFIG = { url: 'YOUR_SUPABASE_URL', anonKey: 'YOUR_SUPABASE_PUBLISHABLE_KEY', currency:'PKR' };
+window.BULAOJI_CONFIG = { url: 'https://rcooakmgqonatxmkwevj.supabase.co', anonKey: 'sb_publishable_naTpTFNC9JOrttgsW4u8yQ_UOEhS6G5', currency:'PKR' };
