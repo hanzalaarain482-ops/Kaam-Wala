@@ -30,3 +30,9 @@ Responsive service-booking **website** with customer, technician and admin dashb
 - **Privacy warning:** service request rows currently contain exact addresses and GPS coordinates, which approved technicians can fetch before selection; limit real-user use until address redaction is implemented server-side.
 
 Do not publish real secret keys. Obtain all required consent for live location and protect customers' exact addresses and identity information. This repository is a usable **development starter** and must not be advertised as a complete commercially tested platform.
+
+## Map-first Interactive Demo
+
+Open **`demo.html`** locally (VS Code Live Server) for the standalone HTML/CSS/JavaScript map-first inDrive-style service booking prototype. It includes service selection, draggable map pin, browser GPS (requires permission and secure localhost/HTTPS context), local saved locations, simulated area-specific minimum service price, offer-increase buttons, simulated technician searching/offers, and an animated **fake** technician route. Demo provider/admin views are included. A network connection is required for Leaflet/OpenStreetMap CDN map tiles.
+
+**Demo is not live dispatch:** no real technicians, current-worker GPS, real payments, phone call, or message delivery. Do not interpret moving simulated marker as live location.
