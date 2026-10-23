@@ -48,3 +48,52 @@ function sendOffer(event,bid){event.preventDefault();const price=Number(formVal(
 function approveTech(user_id,status){act(async()=>{await rpc('admin_set_technician_status',{p_technician:user_id,p_status:status});await refresh()})}
 document.addEventListener('submit',ev=>{if(ev.target.id==='newjob'){ev.preventDefault();act(async()=>{let v=formVal(ev.target);await insert('bookings',{customer_id:id(),service_name:v.service_name,offered_price:Number(v.offered_price),address:v.address,city:v.city,latitude:v.latitude?Number(v.latitude):null,longitude:v.longitude?Number(v.longitude):null,description:v.description});S.tab='bookings';await refresh()})}if(ev.target.id==='profileForm'){ev.preventDefault();act(async()=>{let v=formVal(ev.target);await update('profiles','id',id(),{full_name:v.full_name,phone:v.phone,city:v.city});S.profile={...S.profile,...v};await refresh()})}if(ev.target.id==='techForm'){ev.preventDefault();act(async()=>{let v=formVal(ev.target);v.services=Array.from(ev.target.elements.services.selectedOptions).map(x=>x.value);await update('technician_profiles','user_id',id(),{city:v.city,bio:v.bio,experience_years:Number(v.experience_years),services:v.services,online:v.online==='true'});await refresh()})}if(ev.target.id==='messageForm'){ev.preventDefault();act(async()=>{const v=formVal(ev.target);if(!v.body.trim())return;await insert('messages',{booking_id:S.selected,sender_id:id(),body:v.body.trim()});S.messages=await read('messages','booking_id=eq.'+S.selected+'&select=*&order=created_at.asc')})}if(ev.target.id==='serviceForm'){ev.preventDefault();act(async()=>{let v=formVal(ev.target);await insert('services',{name:v.name,icon:v.icon});await refresh()})}});
 try{S.session=JSON.parse(localStorage.getItem('bulaoji_session')||'null')}catch{}render();if(S.session)load().catch(ex=>{flash(ex.message,true)});setInterval(()=>{if(S.profile&&document.visibilityState==='visible')refresh().catch(()=>{})},15000);
+
+
+/* Additional pages: saved addresses, favorites, alerts, disputes, timeline, support and admin settings. */
+async function loadExtras(){
+ let role=S.profile.role;
+ let [addresses,favorites,notifications,complaints,settings]=await Promise.all([
+ role==='customer'?read('saved_addresses','select=*&order=created_at.desc'):Promise.resolve([]),
+ role==='customer'?read('favorites','select=*'):Promise.resolve([]),
+ read('notifications','select=*&order=created_at.desc&limit=100'),
+ read('complaints','select=*&order=created_at.desc&limit=100'),
+ role==='admin'?read('platform_settings','select=*'):Promise.resolve([])
+ ]);
+ S.addresses=addresses;S.favorites=favorites;S.notifications=notifications;S.complaints=complaints;S.settings=settings;
+}
+function addrPage(){return '<div class="card"><h2>Saved Locations</h2><form id="addrForm" class="fields">'+field('label','Location Name','text','Home')+field('city','City','text',S.profile.city)+field('address','Full Address')+'<button class="btn">Save Address</button></form></div><div class="card"><h2>My Addresses</h2>'+(S.addresses||[]).map(a=>'<div class="item row"><div><b>'+e(a.label)+'</b><p>'+e(a.address)+' • '+e(a.city)+'</p></div><button class="btn danger mini" onclick="removeAddr(\''+a.id+'\')">Delete</button></div>').join('')+'</div>'}
+function favoritesPage(){return '<div class="card"><h2>Favorite Technicians</h2>'+(S.favorites||[]).map(f=>'<div class="item row"><span>👨‍🔧 '+e(f.technician_id.slice(0,8))+'</span><button class="btn danger mini" onclick="removeFav(\''+f.technician_id+'\')">Remove</button></div>').join('')||'<p class="empty">No favorites yet.</p>')+'</div>'}
+function notificationsPage(){return '<div class="card"><div class="row"><h2>Notifications</h2><button class="btn alt mini" onclick="markAllRead()">Mark all read</button></div>'+(S.notifications||[]).map(n=>'<div class="item"><div class="row"><b>'+e(n.title)+'</b>'+(!n.read_at?tag('New'):'')+'</div><p>'+e(n.body)+'</p><small class="muted">'+new Date(n.created_at).toLocaleString('en-PK')+'</small></div>').join('')||'<p class="empty">No alerts.</p>')+'</div>'}
+function complaintsPage(){return '<div class="card"><h2>Support & Complaints</h2><form id="complaintForm" class="stack"><label class="field">Booking (optional)<select name="booking_id"><option value="">General support</option>'+S.bookings.map(b=>'<option value="'+e(b.id)+'">'+e(b.service_name)+' #'+e(b.id.slice(0,8))+'</option>').join('')+'</select></label><label class="field">Describe Your Issue<textarea name="details" required minlength="6"></textarea></label><button class="btn">Submit Complaint</button></form></div><div class="card"><h2>Previous Complaints</h2>'+(S.complaints||[]).map(c=>'<div class="item"><div class="row"><b>'+e(c.details)+'</b>'+tag(c.state)+'</div>'+(S.profile.role==='admin'?'<button class="btn good mini" onclick="resolveComplaint(\''+c.id+'\')">Resolve</button>':'')+'</div>').join('')||'<p class="empty">No complaints.</p>')+'</div>'}
+function settingsPage(){return '<div class="card"><h2>Platform Settings</h2><p class="muted">These settings are informational until payment and commission processing is implemented.</p><form id="settingsForm" class="stack">'+(S.settings||[]).map(c=>field('setting_'+c.key,c.key,'text',c.value)).join('')+'<button class="btn">Save Settings</button></form></div>'}
+async function showEvents(bid){S.selected=bid;await act(async()=>{S.events=await read('booking_events','booking_id=eq.'+bid+'&select=*&order=created_at.asc');S.tab='timeline'})}
+function timelinePage(){return '<div class="card"><h2>Booking Activity</h2>'+(S.events||[]).map(ev=>'<div class="item"><b>'+e(ev.event)+'</b><p class="muted">'+new Date(ev.created_at).toLocaleString('en-PK')+'</p></div>').join('')+'</div>'}
+async function removeAddr(x){await act(async()=>{await request('/rest/v1/saved_addresses?id=eq.'+x,{method:'DELETE'});await loadExtras()})}
+async function removeFav(x){await act(async()=>{await request('/rest/v1/favorites?technician_id=eq.'+x,{method:'DELETE'});await loadExtras()})}
+async function markAllRead(){await act(async()=>{for(const n of (S.notifications||[]).filter(x=>!x.read_at))await update('notifications','id',n.id,{read_at:new Date().toISOString()});await loadExtras()})}
+async function resolveComplaint(x){await act(async()=>{await update('complaints','id',x,{state:'resolved'});await loadExtras()})}
+const oldRefresh=refresh;
+refresh=async function(){await oldRefresh();await loadExtras();render()};
+const baseRender=render;
+render=function(){
+ if(S.profile){
+  pages.customer.addresses=addrPage;pages.customer.favorites=favoritesPage;
+  for(const role of ['customer','technician','admin']){
+   pages[role].notifications=notificationsPage;
+   pages[role].support=complaintsPage;
+   pages[role].timeline=timelinePage;
+   const menu=menus[role];
+   for(const [k,l] of [['notifications','🔔 Notifications'],['support','🆘 Support'],['timeline','🕒 Job Timeline']])if(!menu.find(x=>x[0]===k))menu.splice(menu.length-1,0,[k,l]);
+  }
+  if(!menus.customer.find(x=>x[0]==='addresses'))menus.customer.splice(2,0,['addresses','📍 Saved Addresses'],['favorites','❤️ Favorites']);
+  pages.admin.settings=settingsPage;
+  if(!menus.admin.find(x=>x[0]==='settings'))menus.admin.splice(-1,0,['settings','⚙️ Platform Settings']);
+ }
+ return baseRender()
+};
+document.addEventListener('submit',ev=>{
+ if(ev.target.id==='addrForm'){ev.preventDefault();act(async()=>{await insert('saved_addresses',{...formVal(ev.target),user_id:id()});await loadExtras()})}
+ if(ev.target.id==='complaintForm'){ev.preventDefault();act(async()=>{let v=formVal(ev.target);await insert('complaints',{author_id:id(),details:v.details,booking_id:v.booking_id||null});await loadExtras()})}
+ if(ev.target.id==='settingsForm'){ev.preventDefault();act(async()=>{let v=formVal(ev.target);for(const [k,val] of Object.entries(v))await update('platform_settings','key',k.replace(/^setting_/,''),{value:val});await loadExtras()})}
+});
