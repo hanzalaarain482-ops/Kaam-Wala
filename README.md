@@ -1,9 +1,19 @@
-# BulaoJi screenshot-inspired interface
+# BulaoJi — Apni Price Lagao, Ustaad Bulao!
 
-**Main page:** `index.html` uses `saas.css` and `saas.js`, offering Customer, Technician and Super Admin responsive prototype panels based on the user-supplied reference design. Includes UI pages for booking, service choice, offers, map preview, tracking preview, chats, technician job requests, earnings preview, admin approvals, services, pricing, reports, roles, coupons and support.
+React 18 + TypeScript + Vite starter for a Pakistan home and vehicle services marketplace. Customer, technician and admin interfaces are included as **demo screens**; the transactional backend, complete security policies, live tracking and tests are **not yet production-ready**.
 
-**IMPORTANT:** This is a visual and interactive **prototype**, not an exact pixel-for-pixel recreation and not a functional multi-tenant production SaaS. It uses browser localStorage, sample technicians and sample numbers. No real live location tracking, map routing, calling, payments, or secure customer/technician identity verification is provided here.
+## Run
 
-**Previous experiment:** `legacy.html` retains the earlier map-first frontend and optional Supabase integration via `app.js`, `style.css`, `live.js`, `database.sql`, and `privacy_patch.sql`; it is NOT production-ready and must not be used with real customer addresses until a secured dispatch feed replaces the currently exposed location fields.
+```bash
+npm install
+npm run dev
+```
 
-Launch the screenshot-inspired UI by opening `index.html` with VS Code Live Server. No package installation is required. Internet is needed for the embedded map shown in the prototype.
+Copy `.env.example` to `.env` and fill in the Supabase project URL and public anon key if connecting to Supabase.
+
+- Customer: `/app`
+- Technician: `/tech`
+- Admin: `/admin`
+- Auth demo: `/login`
+
+**Do not treat demo screens as protected routes.** Implement verified role guards, complete Postgres RLS, atomic booking status transitions and authorization before deploying or accepting real customers.
