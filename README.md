@@ -1,30 +1,17 @@
-# BulaoJi
+# BulaoJi — Apni Price Lagao, Ustaad Bulao!
 
-**Apni Price Lagao, Ustaad Bulao!**
-
-React + Vite + TypeScript marketplace starter. This repository is **under active development**. Its customer, technician, and admin screens use demonstration data; they are not a verified production marketplace.
+This branch contains a newly designed public marketing site matching the reference's royal-blue / indigo theme, plus About, Contact, Sign Up, and Sign In pages.
 
 ## Run
 
 ```bash
 npm install
+cp .env.example .env
 npm run dev
 ```
 
-## Routes
+Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in `.env` to enable real Supabase email/password sign-in and sign-up. The sign-up sends the chosen role in user metadata and redirects verified users based on their database profile. **You must deploy a trusted database trigger that creates `profiles` from sign-up metadata while restricting admin-role registration.** Technician approval is a separate admin step. Never use user-editable metadata as authorization.
 
-- /app — customer demo
-- /tech — technician demo
-- /admin — admin demo
+Routes: `/` (Home), `/about`, `/contact`, `/login`, `/signup`. The older `/app`, `/tech`, and `/admin` demo pages remain and are **not production-secure**. Do not launch publicly until protected routes, RLS, database functions, and verification tests have been completed.
 
-## PWA
-
-The repository contains a web manifest, an SVG app icon and an offline service worker. Production builds should register the service worker and validate installability in a browser; web push requires a configured push backend and user permission.
-
-## Security
-
-Do not deploy the demo to real users without server-enforced authentication, Postgres RLS, verified technician identity, transactional booking and wallet functions, location-sharing consent and automated security testing. The business-rule tests in `tests/` are illustrative and do not replace database race-condition tests.
-
-## Status
-
-Multi-job UI and production Supabase integration are **not yet complete in this GitHub version**.
+Contact sends through the visitor's email client using `mailto:`, not a backend. Full marketplace workflows are still in development.
